@@ -15,5 +15,5 @@ while True:
     if service in keyboard_statics.SERVICES:
         print service
         subprocess.call(
-            "python omxplayerMain.py '{}' 'Menos de 5 min'".format(service),
+            "python main.py '{}' 'Menos de 5 min'".format(service),
             shell=True)
