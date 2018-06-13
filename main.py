@@ -1,9 +1,7 @@
 import re
 import sys
 import audio_paths
-import time
 import subprocess
-import playsound
 
 
 def parse_service(text):
@@ -15,13 +13,13 @@ def parse_service(text):
 
 def parse_message(text):
     out_of_service_regex = re.compile(
-        r'(\W|^)Servicio\sfuera\sde\shorario\sde\soperacion\spara\seste\sparadero(\W|$)')
+        r'(\W|^)Servicio\sfuera\sde\shorario\sde\soperacion\spara\sese\sparadero(\W|$)')
     less_than_regex = re.compile(
         r'(\W|^)Menos\sde\s\d{1,2}\s(min|minutos)(\W|$)')
     no_bus_regex = re.compile(
         r'(\W|^)No\shay\sbuses\sque\sse\sdirijan\sal\sparadero(\W|$)')
     between_regex = re.compile(
-        r'(\W|^)Entre\s\d{1,2}\sy\s\d{1,2}\s(min|minutos)(\W|$)')
+        r'(\W|^)Entre\s\d{1,2}\sY\s\d{1,2}\s(min|minutos)(\W|$)')
     estimated_frecuency = re.compile(
         r'(\W|^)Frecuencia\sestimada\ses\s1\sbus\scada\s\d{1,2}\s(min|minutos)(\W|$)')
 
@@ -80,13 +78,14 @@ def find_path(symbol):
 
 
 if __name__ == '__main__':
-    audio_name = 'Output/{}.mp3'.format(str(int(time.time())))
     SERVICE_TEXT = sys.argv[1]
     MESSAGE_TEXT = sys.argv[2]
-    command = 'ffmpeg -i "concat:{}|{}" -acodec copy {}'.format(
+    audio_name = 'Output/{}.mp3'.format(SERVICE_TEXT)
+    command = 'ffmpeg -i "concat:{}|{}" -y -acodec copy {}'.format(
         parse_service(SERVICE_TEXT), parse_message(MESSAGE_TEXT), audio_name)
     subprocess.call(command, shell=True)
     print command, '\n', audio_name
-    subprocess.call('chmod 777 {}'.format(audio_name))
-    playsound.playsound(audio_name)
-    subprocess.call('mpg123 {}'.format(audio_name))
+    # subprocess.call('find . -name "./{}" -print'.format(audio_name))
+    # subprocess.call('sudo chmod 777 {}'.format(audio_name))
+    # playsound.playsound(audio_name)
+    # subprocess.call('mpg123 {}'.format(audio_name))
