@@ -1,7 +1,7 @@
 import re
 import sys
-import audio_paths
 import subprocess
+import audio_paths
 
 
 def parse_service(text):
@@ -85,7 +85,5 @@ if __name__ == '__main__':
         parse_service(SERVICE_TEXT), parse_message(MESSAGE_TEXT), audio_name)
     subprocess.call(command, shell=True)
     print(command, '\n', audio_name)
-    # subprocess.call('find . -name "./{}" -print'.format(audio_name))
     subprocess.call('sudo chmod 777 {}'.format(audio_name), shell=True)
-    # playsound.playsound(audio_name)
     subprocess.call(['mpg123', audio_name])
