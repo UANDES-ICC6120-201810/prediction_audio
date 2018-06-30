@@ -53,7 +53,7 @@ def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
 
         key_event = categorize(event)
 
-        if key_event.keystate != ecodes.KEY_UP:
+        if key_event.keystate != 0:
             continue
 
         pressed_key = keyboard_mapping[key_event.scancode]
