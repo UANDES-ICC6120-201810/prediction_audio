@@ -18,8 +18,11 @@ def process_request(domain, service):
     response = json.loads(prediction_request.text)
     print(response)
     try:
-        if response['error'] == 'Not Authorized':
-            print('Point Not Authorized')
+        if 'error' in response:
+            if response['error'] == 'Not Authorized':
+                print('Point Not Authorized')
+        elif 'result' in response:
+            print('Service not assigned to this stop')
     except TypeError:
         print (response)
         for prediction in response:
