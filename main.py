@@ -1,89 +1,79 @@
-import re
-import sys
+from requests import get
+from evdev import InputDevice, categorize, ecodes
+import json
 import subprocess
-import audio_paths
+import keyboard_statics
 
 
-def parse_service(text):
-    command_portion = '{}'.format(find_path('service'))
-    for symbol in text:
-        command_portion += '|' + find_path(symbol)
-    return command_portion
+def replace_symbols(code):
+    for symbol in keyboard_statics.REPLACING_SYMBOLS:
+        code = code.replace(symbol, keyboard_statics.REPLACING_SYMBOLS[symbol])
+    return code
 
 
-def parse_message(text):
-    out_of_service_regex = re.compile(
-        r'(\W|^)Servicio\sfuera\sde\shorario\sde\soperacion\spara\sese\sparadero(\W|$)')
-    less_than_regex = re.compile(
-        r'(\W|^)Menos\sde\s\d{1,2}\s(min|minutos)(\W|$)')
-    no_bus_regex = re.compile(
-        r'(\W|^)No\shay\sbuses\sque\sse\sdirijan\sal\sparadero(\W|$)')
-    between_regex = re.compile(
-        r'(\W|^)Entre\s\d{1,2}\sY\s\d{1,2}\s(min|minutos)(\W|$)')
-    estimated_frecuency = re.compile(
-        r'(\W|^)Frecuencia\sestimada\ses\s1\sbus\scada\s\d{1,2}\s(min|minutos)(\W|$)')
-
-    if out_of_service_regex.match(text):
-        return play_out_of_service_audio()
-
-    elif less_than_regex.match(text):
-        text = text.split()
-        return play_less_than_audio(int(text[2]))
-
-    elif no_bus_regex.match(text):
-        return play_no_bus_audio()
-
-    elif between_regex.match(text):
-        text = text.split()
-        return play_between_audio(int(text[1]), int(text[3]))
-
-    elif estimated_frecuency.match(text):
-        text = text.split()
-        return play_frequency_audio(int(text[6]))
+def process_request(domain, service):
+    prediction_request = get(
+        '{}/api/v1/estimation_of_buses/{}'.format(domain, service),
+        headers={'Authorization': token})
+    response = json.loads(prediction_request.text)
+    try:
+        if response['error'] == 'Not Authorized':
+            print('Point Not Authorized')
+    except TypeError:
+        print (response)
+        for prediction in response:
+            if prediction['route'].lower() == service:
+                command = "python audio.py '{}' '{}'".format(
+                    service, prediction['waiting_time'])
+                print (command)
+                subprocess.call(command, shell=True)
+                subprocess.call(
+                    ['mpg123', ' Output/{}.mp3'.format(service)])
+                break
 
 
-def play_out_of_service_audio():
-    return '{}'.format(find_path('out_of_service'))
+def easter_egger():
+    subprocess.call(
+        ['mpg123', ' Audio/Gandalf.mp3'])
 
 
-def play_no_bus_audio():
-    return '{}'.format(find_path('no_bus'))
+def process_keyboard_entry(service, services):
+    if service in services:
+        process_request(domain, service)
+    elif service == '8000':
+        easter_egger()
 
 
-def play_between_audio(this, that):
-    return '{0}|{1}|{2}|{3}|{4}'.format(
-        find_path('between'),
-        find_path(this),
-        find_path('and'),
-        find_path(that),
-        find_path('minutes'))
+def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
+    input_text = ''
 
+    for event in keyboard.read_loop():
+        if event.type != ecodes.EV_KEY:
+            continue
 
-def play_less_than_audio(number):
-    return '{0}|{1}|{2}'.format(
-        find_path('less_than'),
-        find_path(number),
-        find_path('minutes'))
+        key_event = categorize(event)
 
+        if key_event.keystate != ecodes.KEY_UP:
+            continue
 
-def play_frequency_audio(minutes):
-    return '{0}|{1}|{2}'.format(
-        find_path('estimated_frequency'),
-        find_path(minutes),
-        find_path('minutes'))
+        pressed_key = keyboard_mapping[key_event.scancode]
 
-
-def find_path(symbol):
-    return audio_paths.AUDIO_PATHS[symbol]
+        if pressed_key == 'ENTER_KEY':
+            callback(input_text, services)
+            input_text = ''
+        else:
+            input_text += pressed_key
 
 
 if __name__ == '__main__':
-    SERVICE_TEXT = sys.argv[1]
-    MESSAGE_TEXT = sys.argv[2]
-    audio_name = 'Output/{}.mp3'.format(SERVICE_TEXT)
-    command = 'ffmpeg -i "concat:{}|{}" -y -acodec copy {}'.format(
-        parse_service(SERVICE_TEXT), parse_message(MESSAGE_TEXT), audio_name)
-    subprocess.call(command, shell=True)
-    print(command, '\n', audio_name)
-    subprocess.call('sudo chmod 777 {}'.format(audio_name), shell=True)
-    subprocess.call(['mpg123', audio_name])
+    domain = keyboard_statics.DOMAIN
+    token = keyboard_statics.SERVICES['token']
+    services = keyboard_statics.SERVICES['services']
+    keyboard_mapping = keyboard_statics.KEYBOARD_MAPPING
+    keyboard = InputDevice('/dev/input/event0')
+
+    if services is None:
+        print('No credentials for this stop.')
+        exit()
+
+    run_with_keyboard(keyboard, keyboard_mapping, services, process_keyboard_entry)
