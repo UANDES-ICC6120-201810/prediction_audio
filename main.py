@@ -16,6 +16,7 @@ def process_request(domain, service):
         '{}/api/v1/estimation_of_buses/{}'.format(domain, service),
         headers={'Authorization': token})
     response = json.loads(prediction_request.text)
+    print(response)
     try:
         if response['error'] == 'Not Authorized':
             print('Point Not Authorized')
