@@ -16,7 +16,6 @@ def process_request(domain, service):
             print('Point Not Authorized')
     elif 'result' in response:
         print('Service not assigned to this stop')
-        not_assigned()
     else:
         for prediction in response:
             print (prediction, service)
@@ -25,24 +24,9 @@ def process_request(domain, service):
                     service, prediction['waiting_time'])
                 print (command)
                 subprocess.call(command, shell=True)
-                subprocess.call(
-                    ['mpg123', 'Output/{}.mp3'.format(service)])
+                # subprocess.call(
+                #    ['mpg123', 'Output/{}.mp3'.format(service)])
                 break
-
-
-def easter_egger():
-    subprocess.call(
-        ['mpg123', 'Audio/Gandalf.mp3'])
-
-
-def not_assigned():
-    subprocess.call(
-        ['mpg123', 'Audio/not-corresponding.mp3'])
-
-
-def fetching():
-    subprocess.call(
-        ['mpg123', 'Audio/fetching.mp3'])
 
 
 def process_keyboard_entry(service, services):
@@ -51,6 +35,8 @@ def process_keyboard_entry(service, services):
         process_request(DOMAIN, service)
     elif service == '8000':
         easter_egger()
+    else:
+        not_assigned()
 
 
 def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
@@ -72,6 +58,21 @@ def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
             input_text = ''
         else:
             input_text += pressed_key
+
+
+def easter_egger():
+    subprocess.call(
+        ['mpg123', 'Audio/Gandalf.mp3'])
+
+
+def not_assigned():
+    subprocess.call(
+        ['mpg123', 'Audio/not-corresponding.mp3'])
+
+
+def fetching():
+    subprocess.call(
+        ['mpg123', 'Audio/fetching.mp3'])
 
 
 if __name__ == '__main__':
