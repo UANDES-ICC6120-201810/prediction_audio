@@ -35,8 +35,14 @@ def process_keyboard_entry(service, services):
         process_request(DOMAIN, service)
     elif service == '8000':
         easter_egger()
+    elif service == '8001':
+        restart_docker()
     else:
         not_assigned()
+
+
+def restart_docker():
+    exit()
 
 
 def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
@@ -73,6 +79,11 @@ def not_assigned():
 def fetching():
     subprocess.call(
         ['mpg123', 'Audio/fetching.mp3'])
+
+
+def ready_for_query():
+    subprocess.call(
+        ['mpg123', 'Audio/ready_for_query.mp3'])
 
 
 if __name__ == '__main__':
