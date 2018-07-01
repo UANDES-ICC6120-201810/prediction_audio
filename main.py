@@ -1,20 +1,14 @@
-from requests import get
-from evdev import InputDevice, categorize, ecodes
 import json
 import subprocess
+from requests import get
+from evdev import InputDevice, categorize, ecodes
 import keyboard_statics
-
-
-def replace_symbols(code):
-    for symbol in keyboard_statics.REPLACING_SYMBOLS:
-        code = code.replace(symbol, keyboard_statics.REPLACING_SYMBOLS[symbol])
-    return code
 
 
 def process_request(domain, service):
     prediction_request = get(
         '{}/api/v1/estimation_of_buses/{}'.format(domain, service),
-        headers={'Authorization': token})
+        headers={'Authorization': TOKEN})
     response = json.loads(prediction_request.text)
     print(response)
     if 'error' in response:
@@ -22,6 +16,7 @@ def process_request(domain, service):
             print('Point Not Authorized')
     elif 'result' in response:
         print('Service not assigned to this stop')
+        not_assigned()
     else:
         for prediction in response:
             print (prediction, service)
@@ -31,7 +26,7 @@ def process_request(domain, service):
                 print (command)
                 subprocess.call(command, shell=True)
                 subprocess.call(
-                    ['mpg123', ' Output/{}.mp3'.format(service)])
+                    ['mpg123', 'Output/{}.mp3'.format(service)])
                 break
 
 
@@ -40,9 +35,20 @@ def easter_egger():
         ['mpg123', 'Audio/Gandalf.mp3'])
 
 
+def not_assigned():
+    subprocess.call(
+        ['mpg123', 'Audio/not-corresponding.mp3'])
+
+
+def fetching():
+    subprocess.call(
+        ['mpg123', 'Audio/fetching.mp3'])
+
+
 def process_keyboard_entry(service, services):
     if service in services:
-        process_request(domain, service)
+        fetching()
+        process_request(DOMAIN, service)
     elif service == '8000':
         easter_egger()
 
@@ -69,14 +75,15 @@ def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
 
 
 if __name__ == '__main__':
-    domain = keyboard_statics.DOMAIN
-    token = keyboard_statics.SERVICES['token']
-    services = keyboard_statics.SERVICES['services']
-    keyboard_mapping = keyboard_statics.KEYBOARD_MAPPING
-    keyboard = InputDevice('/dev/input/event0')
+    DOMAIN = keyboard_statics.DOMAIN
+    TOKEN = keyboard_statics.SERVICES['token']
+    SERVICES = keyboard_statics.SERVICES['services']
+    KEYBOARD_MAPPING = keyboard_statics.KEYBOARD_MAPPING
+    KEYBOARD = InputDevice('/dev/input/event0')
 
-    if services is None:
+    if SERVICES is None:
         print('No credentials for this stop.')
         exit()
 
-    run_with_keyboard(keyboard, keyboard_mapping, services, process_keyboard_entry)
+    run_with_keyboard(KEYBOARD, KEYBOARD_MAPPING, SERVICES,
+                      process_keyboard_entry)

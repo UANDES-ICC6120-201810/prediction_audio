@@ -60,5 +60,7 @@ AUDIO_PATHS = {
     'out_of_service': 'Audio/out_of_service.mp3',
     'service': 'Audio/service.mp3',
     'and': 'Audio/and.mp3',
-    'estimated_frequency': 'Audio/estimated_frequency.mp3'
+    'estimated_frequency': 'Audio/estimated_frequency.mp3',
+    'not-corresponding': 'Audio/not-corresponding.mp3',
+    'fetching': 'Audio/fetching.mp3'
 }
