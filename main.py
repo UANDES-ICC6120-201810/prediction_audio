@@ -96,6 +96,6 @@ if __name__ == '__main__':
     if SERVICES is None:
         print('No credentials for this stop.')
         exit()
-
+    ready_for_query()
     run_with_keyboard(KEYBOARD, KEYBOARD_MAPPING, SERVICES,
                       process_keyboard_entry)
