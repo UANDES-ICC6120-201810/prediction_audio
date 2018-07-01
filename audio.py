@@ -85,5 +85,5 @@ if __name__ == '__main__':
         parse_service(SERVICE_TEXT), parse_message(MESSAGE_TEXT), audio_name)
     subprocess.call(command, shell=True)
     print(command, '\n', audio_name)
-    subprocess.call('sudo chmod 777 {}'.format(audio_name), shell=True)
+    subprocess.call('chmod +x {}'.format(audio_name), shell=True)
     subprocess.call(['mpg123', audio_name])

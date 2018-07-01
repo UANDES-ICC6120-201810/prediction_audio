@@ -26,7 +26,7 @@ def process_request(domain, service):
         for prediction in response:
             print (prediction, service)
             if prediction['route'] == service:
-                command = "python audio.py '{}' '{}'".format(
+                command = "python3 audio.py '{}' '{}'".format(
                     service, prediction['waiting_time'])
                 print (command)
                 subprocess.call(command, shell=True)
