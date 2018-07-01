@@ -17,16 +17,15 @@ def process_request(domain, service):
         headers={'Authorization': token})
     response = json.loads(prediction_request.text)
     print(response)
-    try:
-        if 'error' in response:
-            if response['error'] == 'Not Authorized':
-                print('Point Not Authorized')
-        elif 'result' in response:
-            print('Service not assigned to this stop')
-    except TypeError:
-        print (response)
+    if 'error' in response:
+        if response['error'] == 'Not Authorized':
+            print('Point Not Authorized')
+    elif 'result' in response:
+        print('Service not assigned to this stop')
+    else:
         for prediction in response:
-            if prediction['route'].lower() == service:
+            print (prediction, service)
+            if prediction['route'] == service:
                 command = "python audio.py '{}' '{}'".format(
                     service, prediction['waiting_time'])
                 print (command)
@@ -38,7 +37,7 @@ def process_request(domain, service):
 
 def easter_egger():
     subprocess.call(
-        ['mpg123', ' Audio/Gandalf.mp3'])
+        ['mpg123', 'Audio/Gandalf.mp3'])
 
 
 def process_keyboard_entry(service, services):
