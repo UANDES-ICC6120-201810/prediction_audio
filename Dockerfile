@@ -16,7 +16,8 @@ RUN apt-get update \
                           ffmpeg \
                           mpg123 \
                           nano \
+                          git \
     && pip3 install requests \
                    evdev
 
-CMD python /root/main.py
+CMD git pull; python3 /root/main.py
