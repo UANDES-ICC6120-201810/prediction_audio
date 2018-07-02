@@ -14,7 +14,9 @@ def process_request(domain, service):
     if 'error' in response:
         if response['error'] == 'Not Authorized':
             print('Point Not Authorized')
-    elif 'result' in response:
+
+    elif 'results' in response:
+        not_assigned()
         print('Service not assigned to this stop')
     else:
         for prediction in response:
@@ -24,28 +26,26 @@ def process_request(domain, service):
                     service, prediction['waiting_time'])
                 print (command)
                 subprocess.call(command, shell=True)
-                # subprocess.call(
-                #    ['mpg123', 'Output/{}.mp3'.format(service)])
                 break
 
 
-def process_keyboard_entry(service, services):
-    if service in services:
-        fetching()
-        process_request(DOMAIN, service)
+def process_keyboard_entry(service):
+    if len(service) < 3 or len(service) > 5:
+        not_assigned()
     elif service == '8000':
         easter_egger()
     elif service == '8001':
         restart_docker()
     else:
-        not_assigned()
+        fetching()
+        process_request(DOMAIN, service)
 
 
 def restart_docker():
     exit()
 
 
-def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
+def run_with_keyboard(keyboard, keyboard_mapping, callback):
     input_text = ''
 
     for event in keyboard.read_loop():
@@ -60,7 +60,7 @@ def run_with_keyboard(keyboard, keyboard_mapping, services, callback):
         pressed_key = keyboard_mapping[key_event.scancode]
 
         if pressed_key == 'ENTER_KEY':
-            callback(input_text, services)
+            callback(input_text)
             input_text = ''
         else:
             input_text += pressed_key
@@ -87,15 +87,12 @@ def ready_for_query():
 
 
 if __name__ == '__main__':
+    STOP = 'PC1049'
     DOMAIN = keyboard_statics.DOMAIN
-    TOKEN = keyboard_statics.SERVICES['token']
-    SERVICES = keyboard_statics.SERVICES['services']
+    TOKEN = keyboard_statics.SERVICES[STOP]['token']
     KEYBOARD_MAPPING = keyboard_statics.KEYBOARD_MAPPING
     KEYBOARD = InputDevice('/dev/input/event0')
 
-    if SERVICES is None:
-        print('No credentials for this stop.')
-        exit()
     ready_for_query()
-    run_with_keyboard(KEYBOARD, KEYBOARD_MAPPING, SERVICES,
+    run_with_keyboard(KEYBOARD, KEYBOARD_MAPPING,
                       process_keyboard_entry)
